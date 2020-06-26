@@ -1,13 +1,15 @@
 String cmd = "AT+CIPSTART=\"TCP\",\"api.openweathermap.org\",80\r\n";
-String cmd_get = "GET /data/2.5/weather?id=1835848&APPID=API키\r\n";
+String cmd_get = "GET /data/2.5/weather?id=1268510&APPID=ef44abaa3200b2aabac5cc5677e40735\r\n";
 String recived = "";
 
-String ssid= "\"B2\"";
-String password = ",\"\"";
+String ssid= "\"AndroidHotspot5272\"";
+String password = ",\"98080400\"";
 
 void setup() {
   Serial.begin(9600);
+  Serial2.begin(115200);
   Serial3.begin(9600);
+  
   AT_Object("AT+RST\r\n",2000);
   AT_Object("AT+CWMODE=1\r\n",1000);
 
@@ -44,6 +46,7 @@ void loop() {
   }
   recived=AT_Object(cmd_get,4000);
   Serial.println(json_parser(recived,"main"));
+  Serial2.println(json_parser(recived,"main"));
   delay(3000);
 }
 
@@ -90,7 +93,11 @@ String json_parser(String s, String a){
     val = s.substring(val_index + 1, ed_index);
     }
   }else{ 
-    Serial.print(a); Serial.println(F(" is not available")); 
+    Serial.print(a); 
+    Serial.println(F(" is not available")); 
   } 
   return val; 
+}
+
+void readWeather(String weather){
 }
