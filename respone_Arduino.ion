@@ -1,0 +1,78 @@
+
+const int led_r_pin=A0;
+const int led_g_pin=A1;
+const int led_b_pin=A2;
+String request = "";
+void setup() {
+  Serial.begin(9600);
+  Serial2.begin(115200);
+  pinMode(led_r_pin,OUTPUT);
+  pinMode(led_g_pin,OUTPUT);
+  pinMode(led_b_pin,OUTPUT);
+}
+
+void loop() {
+  if(Serial2.available()){
+    request = Serial2.readString();
+ }
+  Serial.println(request);
+  readWeather(request);
+  delay(1000);
+}
+
+void readWeather(String Weather){
+
+  
+if(Weather.indexOf("Clouds") != -1 || ("mist")!= -1 ||("Haze")!= -1 || ("Smoke")!= -1 || ("fog")!= -1|| ("Sand")!= -1|| ("ash")!= -1)
+{
+  Oncloudled();
+}
+else if(Weather.indexOf("rain") != -1 || ("Drizzle") != -1|| ("Squall") != -1)
+{
+  Onrainled();
+}
+ else if(Weather.indexOf("Clear") != -1)
+  {
+    Onsunled();
+  }
+else if(Weather.indexOf("Snow") != -1 )
+{
+  OnSnowled();
+}
+else if (Weather.indexOf("Wind") != -1 )
+{
+}
+
+void offled()
+{
+  digitalWrite(led_r_pin,LOW);
+  digitalWrite(led_g_pin,LOW);
+  digitalWrite(led_g_pin,LOW);
+}
+
+void Onsunled()
+{
+  offled();
+  digitalWrite(led_r_pin,HIGH);
+  }
+void Oncloudled()
+{
+  offled();
+  digitalWrite(led_g_pin,HIGH);
+}
+void Onrainled()
+{
+  offled();
+  digitalWrite(led_b_pin,HIGH);
+}
+void OnSnowled()
+{
+  offled();
+  digitalWrite(led_r_pin,HIGH);
+}
+void Windled()
+{
+  offled();
+  digitalWrite(led_g_pin,HIGH);
+}
+
