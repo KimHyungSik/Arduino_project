@@ -1,78 +1,101 @@
-
 const int led_r_pin=A0;
 const int led_g_pin=A1;
 const int led_b_pin=A2;
-String request = "";
+const int fan_pin=A5;
+String request_ = "";
+String request_weather = "";
+String request_temp = "";
+String request_wind = "";
+
 void setup() {
   Serial.begin(9600);
   Serial2.begin(115200);
   pinMode(led_r_pin,OUTPUT);
   pinMode(led_g_pin,OUTPUT);
   pinMode(led_b_pin,OUTPUT);
+  pinMode(fan_pin,OUTPUT);
 }
 
 void loop() {
-  if(Serial2.available()){
-    request = Serial2.readString();
- }
-  Serial.println(request);
-  readWeather(request);
+ 
+   if(Serial2.available()){
+      request_ = Serial2.readString();//날씨가져와서 저장
+   }
+  Serial_parser();
+  readWeather(request_weather);
   delay(1000);
 }
 
 void readWeather(String Weather){
-
-  
-if(Weather.indexOf("Clouds") != -1 || ("mist")!= -1 ||("Haze")!= -1 || ("Smoke")!= -1 || ("fog")!= -1|| ("Sand")!= -1|| ("ash")!= -1)
-{
-  Oncloudled();
-}
-else if(Weather.indexOf("rain") != -1 || ("Drizzle") != -1|| ("Squall") != -1)
-{
-  Onrainled();
-}
- else if(Weather.indexOf("Clear") != -1)
+  if(Weather.indexOf("Clouds") != -1 || ("mist")!= -1 ||("Haze")!= -1 || ("Smoke")!= -1 || ("fog")!= -1|| ("Sand")!= -1|| ("ash")!= -1){
+    Oncloudled();
+  }
+  else if(Weather.indexOf("rain") != -1 || ("Drizzle") != -1|| ("Squall") != -1){
+    Onrainled();
+  }
+  else if(Weather.indexOf("Clear") != -1)
   {
     Onsunled();
   }
-else if(Weather.indexOf("Snow") != -1 )
-{
-  OnSnowled();
-}
-else if (Weather.indexOf("Wind") != -1 )
-{
+  else if(Weather.indexOf("Snow") != -1 ){
+    OnSnowled();
+  }
+  else if (Weather.indexOf("Wind") != -1 ){
+  }
 }
 
-void offled()
-{
+void offled(){
   digitalWrite(led_r_pin,LOW);
   digitalWrite(led_g_pin,LOW);
   digitalWrite(led_g_pin,LOW);
 }
 
-void Onsunled()
-{
-  offled();
-  digitalWrite(led_r_pin,HIGH);
-  }
-void Oncloudled()
-{
-  offled();
-  digitalWrite(led_g_pin,HIGH);
-}
-void Onrainled()
-{
-  offled();
-  digitalWrite(led_b_pin,HIGH);
-}
-void OnSnowled()
-{
+void Onsunled(){
   offled();
   digitalWrite(led_r_pin,HIGH);
 }
-void Windled()
-{
+
+void Oncloudled(){
   offled();
   digitalWrite(led_g_pin,HIGH);
 }
 
+void Onrainled(){
+  offled();
+  digitalWrite(led_b_pin,HIGH);
+}
+
+void OnSnowled(){
+  offled();
+  digitalWrite(led_r_pin,HIGH);
+}
+
+void Windled(){
+  offled();
+  digitalWrite(led_g_pin,HIGH);
+}
+
+void Serial_parser(){
+  int starting_temp = request_.indexOf(',');
+  int starting_wind = request_.indexOf(',', starting_temp+1);
+  for(int i=0;i<starting_temp;i++){
+    request_weather += request_[i];
+  }
+  for(int x=starting_temp+1;x<starting_wind;x++)
+  {
+    request_temp+= request_[x];
+  }
+   for(int x=starting_wind+1;x<request_.length();x++)
+  {
+    request_wind+= request_[x];
+  }
+  if(request_weather.length()>0)
+    Serial.println(request_weather);
+  if(request_temp.length()>0)
+    Serial.println(request_temp.toInt());
+  if(request_wind.length()>0)
+    Serial.println(request_wind.toDouble());
+  request_weather = "";
+  request_temp = "";
+  request_wind = "";
+}
