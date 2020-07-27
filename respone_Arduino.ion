@@ -1,25 +1,27 @@
 //빨강색
-const int led_r_pin=30;
+const int clear_pin=30;
 //초록색
-const int led_g_pin=32;
+const int rain_pin=34;
 //파란색
-const int led_b_pin=34;
+const int cloud_pin=38;
 //노란색
-const int led_r_pin1=36;
-const int led_g_pin2=37;
+const int snow_pin=42;
 //하늘색
-const int led_g_pin3=A8;
-const int led_b_pin1=A9;
+const int wind_pin=46;
 //======================
 const int fan_pin1=13;
 const int fan_pin2=12;
-const int inputpin=A7;
+const int inputpin=2;
 const int grd1=31;
 const int grd2=33;
 const int grd3=35;
-const int grd4=38;
-const int grd5=A10;
-const int grd6=A11;
+const int grd4=39;
+const int grd5=49;
+const int grd6=43;
+const int grd7=4;
+const int vpin=3;
+
+
 String request_ = "";
 String request_weather = "";
 String request_temp = "";
@@ -32,12 +34,22 @@ double wind;
 void setup() {
   Serial.begin(9600);
   Serial1.begin(115200);
-  pinMode(led_r_pin,OUTPUT);
-  pinMode(led_g_pin,OUTPUT);
-  pinMode(led_b_pin,OUTPUT);
+  pinMode(clear_pin,OUTPUT);
+  pinMode(snow_pin,OUTPUT);
+  pinMode(cloud_pin,OUTPUT);
+  pinMode(wind_pin,OUTPUT);
+  pinMode(rain_pin,OUTPUT);
   pinMode(fan_pin1,OUTPUT);
   pinMode(fan_pin2,OUTPUT);
   pinMode(inputpin,INPUT);
+  pinMode(grd1,OUTPUT);
+  pinMode(grd2,OUTPUT);
+  pinMode(grd3,OUTPUT);
+  pinMode(grd4,OUTPUT);
+  pinMode(grd5,OUTPUT);
+  pinMode(grd6,OUTPUT);
+  pinMode(grd7,OUTPUT);
+  pinMode(vpin,OUTPUT);
   
   digitalWrite(grd1,LOW);
   digitalWrite(grd2,LOW);
@@ -45,78 +57,93 @@ void setup() {
   digitalWrite(grd4,LOW);
   digitalWrite(grd5,LOW);
   digitalWrite(grd6,LOW);
+  digitalWrite(grd7,LOW);
+  digitalWrite(vpin,HIGH);
 }
 
 void loop() { 
-   if(Serial1.available()){
-      request_ = Serial1.readString();//날씨가져와서 저장
-      Serial_parser();
-      delay(1000);
+  Serial.print("test : ");
+  Serial.println(request_);
+  if(Serial1.available()){
+    request_ = Serial1.readString();//날씨가져와서 저장
+    if(sizeof(request_) != ",,"){
+       Serial.println("sertial paresr");
+        Serial_parser();
+      }
+   
+    delay(1000);
+  }
+  val=digitalRead(inputpin);
+  Serial.println(val);
+   if(val){
+    Serial.print("request_weathe : ");
+    Serial.println(request_weather);
+     readWeather(request_weather);
+     if(wind>2){
+      onfan();
+     }
+     else {
+      offfan();
+     }
+   }else{
+    off();
    }
-   if(wind>2)
-   {
-    onfan();
-   }
-   else 
-   {
-    offfan();
-   }
+   delay(1000);
 }
 
  
 
 
 void readWeather(String Weather){
-  if(Weather.indexOf("Clouds") != -1 || ("mist")!= -1 ||("Haze")!= -1 || ("Smoke")!= -1 || ("fog")!= -1|| ("Sand")!= -1|| ("ash")!= -1){
-    Oncloudled();
-  }
-  else if(Weather.indexOf("rain") != -1 || ("Drizzle") != -1|| ("Squall") != -1){
-    Onrainled();
-  }
-  else if(Weather.indexOf("Clear") != -1)
-  {
-    Onsunled();
-  }
-  else if(Weather.indexOf("Snow") != -1 ){
-    OnSnowled();
-  }
-  else if (Weather.indexOf("Wind") != -1 ){
-  }
+  Serial.print("read_Weather : ");
+  Serial.println(Weather);
+  
+    if(Weather.indexOf("Clouds") != -1 ||Weather.indexOf("Haze")!= -1 || Weather.indexOf("Smoke")!= -1 || Weather.indexOf("fog")!= -1|| Weather.indexOf("Sand")!= -1|| Weather.indexOf("ash")!= -1){
+      Oncloudled();
+    }
+    else if(Weather.indexOf("Rain") != -1 || Weather.indexOf("Drizzle") != -1|| Weather.indexOf("Squall") != -1 || Weather.indexOf("Mist")!= -1 ){
+      Onrainled();
+    }
+    else if(Weather.indexOf("Clear") != -1)
+    {
+      Onsunled();
+    }
+    else if(Weather.indexOf("Snow") != -1 ){
+      OnSnowled();
+    }
+   
 }
 //ledoff
 void offled(){
-  digitalWrite(led_r_pin,LOW);
-  digitalWrite(led_g_pin,LOW);
-  digitalWrite(led_g_pin,LOW);
+  digitalWrite(clear_pin,LOW);
+  digitalWrite(rain_pin,LOW);
+  digitalWrite(cloud_pin,LOW);
 }
 //맑음(빨간색)
 void Onsunled(){
   offled();
-  digitalWrite(led_r_pin,HIGH);
+  digitalWrite(clear_pin,HIGH);
 }
 //구름(파란색)
 void Oncloudled(){
   offled();
-  digitalWrite(led_b_pin,HIGH);
+  digitalWrite(cloud_pin,HIGH);
 }
 //비(하늘색)
 void Onrainled(){
   offled();
-  
-digitalWrite(led_g_pin2,HIGH);
-digitalWrite(led_b_pin1,HIGH);
+digitalWrite(rain_pin,HIGH);
 }
 
 //눈(노란색)
 void OnSnowled(){
   offled();
- digitalWrite(led_r_pin1,HIGH);
-digitalWrite(led_g_pin2,HIGH);
+ digitalWrite(snow_pin,HIGH);
 }
 //바람(초록색)
 void Windled(){
   offled();
-  digitalWrite(led_g_pin,HIGH);
+  digitalWrite(wind_pin,HIGH);
 }
 //선풍기on
 void onfan()
@@ -130,10 +157,18 @@ void offfan()
   digitalWrite(fan_pin1,LOW);
   digitalWrite(fan_pin2,LOW);
 }
+void off()
+{
+  offled();
+  offfan();
+}
 
 
 
 void Serial_parser(){
+  request_weather = "";
+  request_temp = "";
+  request_wind = "";
 
   int starting_temp = request_.indexOf(',');
   int starting_wind = request_.indexOf(',', starting_temp+1);
@@ -161,7 +196,5 @@ void Serial_parser(){
       Serial.println(request_wind.toDouble());
     }
   }
-  request_weather = "";
-  request_temp = "";
-  request_wind = "";
+
 }
